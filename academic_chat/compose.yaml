@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: academic_chat
+      POSTGRES_USER: academic
+      POSTGRES_PASSWORD: academic_demo
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U academic -d academic_chat"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  app:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://academic:academic_demo@postgres:5432/academic_chat
+      PICKLE_API_KEY: ${PICKLE_API_KEY:-}
+      PICKLE_BASE_URL: ${PICKLE_BASE_URL:-https://llm.pcl.kr/v1}
+      PICKLE_TOOL_MODEL: ${PICKLE_TOOL_MODEL:-google/gemini-2.5-flash}
+      PICKLE_CHAT_MODEL: ${PICKLE_CHAT_MODEL:-google/gemini-2.5-flash}
+      VECTOR_SCORE_THRESHOLD: ${VECTOR_SCORE_THRESHOLD:-0.38}
+    ports:
+      - "127.0.0.1:8771:8765"
+    volumes:
+      - chroma_data:/app/data/chroma
+      - ./data/models:/app/data/models
+volumes:
+  postgres_data:
+  chroma_data:

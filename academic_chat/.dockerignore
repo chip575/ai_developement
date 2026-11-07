@@ -1,0 +1,11 @@
+.venv
+__pycache__
+*.pyc
+.git
+.env
+data/*.db
+data/chroma
+data/models
+frontend/node_modules
+frontend/dist
+.tooling
