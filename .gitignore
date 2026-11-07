@@ -1,0 +1,14 @@
+# Local credentials and generated archives must not be published.
+.env
+.env.*
+!.env.example
+*.zip
+
+# Local databases and dependency directories.
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+.venv/
+node_modules/

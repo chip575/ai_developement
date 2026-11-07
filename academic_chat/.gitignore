@@ -3,7 +3,12 @@ __pycache__/
 .pytest_cache/
 *.pyc
 .env
+.env.*
+!.env.example
+*.zip
 data/*.db
+data/*.db-*
+data/*.sqlite*
 data/chroma/
 data/models/
 .tooling/

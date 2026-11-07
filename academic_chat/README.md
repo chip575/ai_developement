@@ -4,16 +4,33 @@
 
 ## 실행
 
+### 이메일 전달용 ZIP
+
+상위 폴더의 `PNU_Assistant_Windows.zip`은 Gmail이 차단하는 `.cmd`, `.ps1`, `.js` 확장자를 제외한 전송용 소스 패키지입니다. ZIP의 `.env`에는 실제 API 키가 없고 주석과 예시 값만 있으므로, 받는 사람이 본인의 키를 직접 입력해야 합니다. 전송본의 실행·설정 방법은 [전송용 README](README_EMAIL.md)를 확인하세요. 전송 성공 여부는 Gmail의 추가 콘텐츠 검사에 따라 달라질 수 있습니다. ZIP은 Git에 올리지 않으며, 직접 만들려면 원본 폴더에서 `uv run python -m scripts.package_demo`를 실행합니다.
+
+### 이 원본 폴더에서 Windows로 실행
+
+1. [Docker Desktop](https://www.docker.com/products/docker-desktop/)을 설치하고 실행합니다. 설치 후 재시작이나 WSL 설정이 필요하면 Docker Desktop의 안내를 따릅니다.
+2. 원본 `academic_chat` 폴더를 엽니다. 이메일 전달용 ZIP은 위의 별도 안내를 사용합니다.
+3. 처음 내려받았다면 이 폴더에서 PowerShell을 열고 `Copy-Item .env.example .env`를 실행한 다음 `notepad .env`에서 `PICKLE_API_KEY=` 뒤에 본인 키를 입력하고 저장합니다. `.env`는 Git에 올리지 마세요.
+4. **START_PNU.cmd**를 더블클릭합니다. 첫 실행에는 인터넷이 필요하며 이미지, 패키지, 임베딩 모델을 다운로드하므로 몇 분 이상 걸릴 수 있습니다.
+5. 준비가 완료되면 브라우저가 자동으로 열립니다. 기본 주소는 http://127.0.0.1:8771 입니다.
+6. 종료하려면 **STOP_PNU.cmd**를 더블클릭합니다. 이후 다시 시작하려면 START_PNU.cmd를 실행합니다. DB와 검색 인덱스는 보존됩니다.
+
+Vue 화면, 서버, 데이터와 문서는 이 폴더에 포함되어 있습니다. 다른 프로젝트나 별도의 Python, Node.js, uv 설치는 필요하지 않습니다. 앱은 실행한 PC의 localhost에만 열립니다. 이메일 수신자는 각자 Docker Desktop을 설치하고 실행해야 합니다.
+
+같은 폴더의 `.env`에 API 키와 설정이 있습니다. 키를 바꾸려면 메모장으로 `PICKLE_API_KEY=` 값을 수정하고 저장한 뒤 앱을 중지하고 다시 실행하세요. `.env`가 없으면 `.env.example`을 `.env`로 복사해 작성하세요. 전송용 ZIP에는 예시 키만 포함됩니다. 키의 유효성·모델 접근 권한이 필요하며 AI 호출 비용이 발생할 수 있습니다.
+
+포트 충돌 시 `.env`의 `APP_PORT` 또는 `POSTGRES_PORT`를 사용하지 않는 번호로 바꾸고 재실행하세요. 앱이 시작되지 않으면 Docker Desktop, 인터넷과 포트를 확인하세요. 상세 오류는 이 폴더에서 `docker compose logs --tail 100 app`으로 확인합니다. 같은 이름의 Windows 프로세스 환경 변수가 있으면 포트 설정이 `.env`보다 우선될 수 있습니다.
+
 ### Docker + PostgreSQL
 
 ```powershell
-cd "C:\Users\doyun\ai developement_2week\academic_chat"
-# 현재 Windows 사용자 환경 변수에 저장된 키를 Compose 프로세스에 전달합니다.
-$env:PICKLE_API_KEY = [Environment]::GetEnvironmentVariable('PICKLE_API_KEY', 'User')
+# 압축을 푼 academic_chat 폴더에서 실행합니다.
 docker compose up --build -d
 ```
 
-브라우저에서 http://127.0.0.1:8771 을 엽니다. FastAPI와 PostgreSQL이 각각 컨테이너에서 실행됩니다. 처음 실행할 때 비어 있는 DB에는 가상 데이터를, 비어 있는 Chroma에는 문서 인덱스를 생성합니다. API 키가 없으면 공개 검색은 가능하지만 개인 조회의 모델 도구 호출과 일반 대화는 사용할 수 없습니다. 모델 캐시는 `data/models`에 보관합니다.
+브라우저에서 http://127.0.0.1:8771 을 엽니다. FastAPI와 PostgreSQL이 각각 컨테이너에서 실행됩니다. 처음 실행할 때 비어 있는 DB에는 가상 데이터를, 비어 있는 Chroma에는 문서 인덱스를 생성합니다. API 키가 없으면 개인 조회의 모델 도구 호출과 일반 대화는 사용할 수 없습니다. 모델 캐시는 Docker 볼륨에 보관합니다.
 
 기존 SQLite 데이터를 PostgreSQL로 한 번 복사하려면 **앱을 시작하기 전 비어 있는 PostgreSQL**을 실행하고 아래 명령을 사용합니다. 이미 데이터가 있는 대상은 덮어쓰지 않으며, 로그인 세션은 복사하지 않습니다.
 
@@ -32,7 +49,7 @@ SQLite와 PostgreSQL은 이후 자동 동기화되지 않습니다. 기존 로�
 PowerShell에서 이 폴더로 이동합니다.
 
 ```powershell
-cd "C:\Users\doyun\ai developement_2week\academic_chat"
+# academic_chat 폴더에서 실행합니다. uv 및 Node.js 별도 설치 필요
 uv sync
 uv run python -m app.seed
 uv run python -m app.index_docs
@@ -60,7 +77,7 @@ Vue 화면을 빌드하려면 Node.js와 npm이 필요합니다. `frontend/dist`
 
 ## Pickle API 설정
 
-`PICKLE_API_KEY`를 현재 프로세스 환경 변수에서 읽습니다. Windows에서는 프로세스에 없을 경우 현재 사용자의 환경 변수도 확인합니다. 키를 코드, 문서, 로그에 넣지 않습니다.
+Docker 실행 시 이 폴더의 `.env`를 컨테이너 환경 변수로 전달합니다. 로컬 Python 직접 실행은 `.env`를 자동으로 불러오지 않으므로 현재 프로세스 또는 Windows 사용자 환경 변수에 설정해야 합니다. `.env`는 Git 추적에서 제외되며 전달용 ZIP에는 예시 값만 들어갑니다.
 
 | 환경 변수 | 기본값 / 의미 |
 |---|---|
@@ -103,7 +120,7 @@ Password: academic_demo
 4. 컬렉션을 위에서 아래 순서로 실행합니다. 데모 로그인 뒤 Postman 쿠키 저장소가 `campus_session`을 다음 요청에 전달합니다. 쿠키가 꺼져 있으면 개인 조회 테스트가 실패합니다.
 5. 공개 졸업학점 검색, 비로그인 개인 조회 차단, 데모 로그인, 본인 이수기록·졸업요건, 타인 정보 차단 및 로그아웃을 확인합니다. 개인 조회는 유효한 Pickle 키와 도구 호출 모델이 필요합니다.
 
-FastAPI 자동 API 문서는 서버 실행 후 http://127.0.0.1:8765/docs 에서도 확인할 수 있습니다.
+FastAPI 자동 API 문서는 Docker 실행 후 http://127.0.0.1:8771/docs 에서 확인할 수 있습니다. 로컬 직접 실행의 기본 주소는 http://127.0.0.1:8765/docs 입니다.
 
 ## 검색과 대체 크롤링
 
